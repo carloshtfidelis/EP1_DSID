@@ -66,6 +66,7 @@ int main(int argc, char const *argv[])
     pthread_t master;
     
     pthread_create(&master, NULL, masterThread, (void *) NULL);
+    pthread_join(master, NULL)
 
     return 0; 
 } 
