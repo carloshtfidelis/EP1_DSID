@@ -4,11 +4,13 @@
 #include <stdlib.h> 
 #include <netinet/in.h> 
 #include <string.h> 
+#include <pthread.h>
 
 #define PORT 6969 
+#define MAX_THREADS 4
 
-int main(int argc, char const *argv[]) 
-{ 
+void *masterThread(void *param)
+{
     int server_fd, new_socket, valread; 
     struct sockaddr_in address; 
     int opt = 1; 
@@ -41,9 +43,8 @@ int main(int argc, char const *argv[])
         perror("listen"); 
         exit(EXIT_FAILURE); 
     } 
-
-    while(1){
-        
+    
+    while(1){        
         if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) 
         { 
             perror("accept"); 
@@ -56,6 +57,15 @@ int main(int argc, char const *argv[])
 
         close(new_socket);
     }
+       pthread_exit(NULL);
+}
+
+
+int main(int argc, char const *argv[]) 
+{ 
+    pthread_t master;
+    
+    pthread_create(&master, NULL, masterThread, (void *) NULL);
 
     return 0; 
 } 
