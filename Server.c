@@ -7,16 +7,28 @@
 #include <pthread.h>
 
 #define PORT 6969 
-#define MAX_THREADS 4
+#define THREADS_MAX 4
+
+void *slave(void *param){
+	int new_socket = *((int *)(param));
+	int valread;
+	char buffer[1024] = {0}; 
+    	char *hello = "Hello from server"; 
+
+	valread = read( new_socket , buffer, 1024); 
+        printf("%s\n",buffer ); 
+        send(new_socket , hello , strlen(hello) , 0 ); 
+        printf("Hello message sent\n"); 
+	close(new_socket);		
+}
 
 void *masterThread(void *param)
 {
-    int server_fd, new_socket, valread; 
+    int server_fd, new_socket; 
     struct sockaddr_in address; 
     int opt = 1; 
     int addrlen = sizeof(address); 
-    char buffer[1024] = {0}; 
-    char *hello = "Hello from server"; 
+    
        
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) 
     { 
@@ -43,6 +55,10 @@ void *masterThread(void *param)
         perror("listen"); 
         exit(EXIT_FAILURE); 
     } 
+	
+       pthread_t threads[THREADS_MAX];
+       int thread_args[THREADS_MAX];
+       
     
     while(1){        
         if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) 
@@ -50,12 +66,12 @@ void *masterThread(void *param)
             perror("accept"); 
             exit(EXIT_FAILURE); 
         } 
-        valread = read( new_socket , buffer, 1024); 
-        printf("%s\n",buffer ); 
-        send(new_socket , hello , strlen(hello) , 0 ); 
-        printf("Hello message sent\n"); 
 
-        close(new_socket);
+	int i;
+       for (i = 0; i < THREADS_MAX; i++)
+       {
+               pthread_create(&threads[i], NULL, slave, (void *) 								&new_socket);
+	}
     }
        pthread_exit(NULL);
 }
