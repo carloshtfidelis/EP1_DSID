@@ -70,7 +70,7 @@ void *masterThread(void *param)
 	int i;
        for (i = 0; i < THREADS_MAX; i++)
        {
-               pthread_create(&threads[i], NULL, slave, (void *) 								&new_socket);
+               pthread_create(&threads[i], NULL, slave, (void *) &new_socket);
 	}
     }
        pthread_exit(NULL);
